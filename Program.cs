@@ -7,7 +7,7 @@ if (args.Contains("--help"))
     Console.WriteLine("""
         Crystal Caverns
 
-        Explore the caves, collect crystals, fight slimes, and find stairs.
+        Explore the caves, collect crystals, fight slimes, and find portals.
 
         Controls:
           Arrow keys / WASD  Move or attack
@@ -27,7 +27,7 @@ enum Tile
 {
     Wall,
     Floor,
-    Stairs
+    Portal
 }
 
 enum ItemKind
@@ -87,7 +87,7 @@ class Actor
 class Enemy : Actor
 {
     public Enemy(Point position, int level)
-        : base("Cave slime", position, maxHealth: 6 + level * 2, attack: 2 + level, glyph: "s")
+        : base("Cave slime", position, maxHealth: 6 + level * 2, attack: 2 + level, glyph: "👾")
     {
     }
 }
@@ -104,11 +104,12 @@ class Game
     private readonly Queue<Direction> _demoMoves = new();
     private readonly Queue<string> _lessonDeck = new();
     private Tile[,] _map = new Tile[1, 1];
-    private Actor _player = new("Explorer", new Point(1, 1), maxHealth: 30, attack: 5, glyph: "@");
-    private int _level = 1;
+private Actor _player =
+    new("Explorer", new Point(1, 1), 30, 5, "🧙");
+        private int _level = 1;
     private int _turn = 1;
     private int _crystals;
-    private string _message = "Find the stairs. Crystals make the expedition worthwhile.";
+    private string _message = "Find the portals. Crystals make the expedition worthwhile.";
 
     public Game(int width, int height, bool demoMode)
     {
@@ -186,8 +187,8 @@ class Game
         AddLessonScrolls(count: 3);
         AddEnemies(5 + _level);
 
-        var stairs = RandomOpenPoint(minDistanceFromPlayer: 18);
-        _map[stairs.X, stairs.Y] = Tile.Stairs;
+        var portals = RandomOpenPoint(minDistanceFromPlayer: 18);
+        _map[portals.X, portals.Y] = Tile.Portal;
 
         _message = $"Depth {_level}: the air hums around the crystals.";
     }
@@ -316,7 +317,7 @@ class Game
         _player.Position = destination;
         PickUpItemAt(destination);
 
-        if (_map[destination.X, destination.Y] == Tile.Stairs)
+        if (_map[destination.X, destination.Y] == Tile.Portal)
         {
             _level++;
             _player.Health = Math.Min(_player.MaxHealth, _player.Health + 8);
@@ -485,9 +486,9 @@ class Game
 
         return _map[point.X, point.Y] switch
         {
-            Tile.Wall => "#",
-            Tile.Stairs => ">",
-            _ => "."
+            Tile.Wall => "🧱",
+            Tile.Portal => "🌀",
+            _ => "  "
         };
     }
 
@@ -522,7 +523,7 @@ class Game
         return _map[point.X, point.Y] switch
         {
             Tile.Wall => ConsoleColor.DarkGray,
-            Tile.Stairs => ConsoleColor.Yellow,
+            Tile.Portal => ConsoleColor.Yellow,
             _ => ConsoleColor.Gray
         };
     }
@@ -588,7 +589,7 @@ class Game
     {
         foreach (var lesson in new[]
                  {
-                     "enum types give names to a fixed set of choices, like Wall, Floor, and Stairs.",
+                     "enum types give names to a fixed set of choices, like Wall, Floor, and Portals.",
                      "record structs are great for tiny value types. Point compares by X and Y automatically.",
                      "List<T> grows as you add enemies, items, and lessons. The type tells C# what it contains.",
                      "LINQ methods such as FirstOrDefault and Any let you ask collections clear questions.",
