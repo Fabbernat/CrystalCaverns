@@ -30,3 +30,4 @@ C:\Users\admin\Documents\Codex\2026-06-12\CrystalCaverns\obj\Debug\net10.0\refin
 C:\Users\admin\Documents\Codex\2026-06-12\CrystalCaverns\obj\Debug\net10.0\CrystalCaverns.pdb
 C:\Users\admin\Documents\Codex\2026-06-12\CrystalCaverns\obj\Debug\net10.0\CrystalCaverns.genruntimeconfig.cache
 C:\Users\admin\Documents\Codex\2026-06-12\CrystalCaverns\obj\Debug\net10.0\ref\CrystalCaverns.dll
+C:\Users\admin\Documents\Codex\2026-06-12\CrystalCaverns\obj\Debug\net10.0\CrystalCaverns.sourcelink.json

@@ -20,7 +20,7 @@ if (args.Contains("--help"))
     return;
 }
 
-var game = new Game(width: 48, height: 22, demoMode: args.Contains("--demo"));
+var game = new Game(width: 20, height: 12, demoMode: args.Contains("--demo"));
 game.Run();
 
 enum Tile
@@ -55,17 +55,17 @@ readonly record struct Point(int X, int Y)
 
 record Item(Point Position, ItemKind Kind, string? Lesson = null)
 {
-    public char Glyph => Kind switch
+    public string Glyph => Kind switch
     {
-        ItemKind.Crystal => '*',
-        ItemKind.Potion => '!',
-        _ => '?'
+        ItemKind.Crystal => "💎",
+        ItemKind.Potion => "🍎",
+        _ => "?"
     };
 }
 
 class Actor
 {
-    public Actor(string name, Point position, int maxHealth, int attack, char glyph)
+    public Actor(string name, Point position, int maxHealth, int attack, string glyph)
     {
         Name = name;
         Position = position;
@@ -80,14 +80,14 @@ class Actor
     public int MaxHealth { get; }
     public int Health { get; set; }
     public int Attack { get; }
-    public char Glyph { get; }
+    public string Glyph { get; }
     public bool IsAlive => Health > 0;
 }
 
 class Enemy : Actor
 {
     public Enemy(Point position, int level)
-        : base("Cave slime", position, maxHealth: 6 + level * 2, attack: 2 + level, glyph: 's')
+        : base("Cave slime", position, maxHealth: 6 + level * 2, attack: 2 + level, glyph: "s")
     {
     }
 }
@@ -104,7 +104,7 @@ class Game
     private readonly Queue<Direction> _demoMoves = new();
     private readonly Queue<string> _lessonDeck = new();
     private Tile[,] _map = new Tile[1, 1];
-    private Actor _player = new("Explorer", new Point(1, 1), maxHealth: 30, attack: 5, glyph: '@');
+    private Actor _player = new("Explorer", new Point(1, 1), maxHealth: 30, attack: 5, glyph: "@");
     private int _level = 1;
     private int _turn = 1;
     private int _crystals;
@@ -464,7 +464,7 @@ class Game
             : string.Concat(text.AsSpan(0, _width - 3), "...");
     }
 
-    private char GlyphFor(Point point)
+    private string GlyphFor(Point point)
     {
         if (_player.Position == point)
         {
@@ -485,9 +485,9 @@ class Game
 
         return _map[point.X, point.Y] switch
         {
-            Tile.Wall => '#',
-            Tile.Stairs => '>',
-            _ => '.'
+            Tile.Wall => "#",
+            Tile.Stairs => ">",
+            _ => "."
         };
     }
 
