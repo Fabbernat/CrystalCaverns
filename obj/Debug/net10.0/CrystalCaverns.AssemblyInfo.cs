@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CrystalCaverns")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+467dda9c65b8822a9109faba6a39d74b7e7f238f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2550f5c1c594eb7652ec2f0ee0716791a51d8a7e")]
 [assembly: System.Reflection.AssemblyProductAttribute("CrystalCaverns")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CrystalCaverns")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

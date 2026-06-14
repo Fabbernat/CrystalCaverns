@@ -59,7 +59,7 @@ record Item(Point Position, ItemKind Kind, string? Lesson = null)
     {
         ItemKind.Crystal => "💎",
         ItemKind.Potion => "🍎",
-        _ => "?"
+        _ => "❓"
     };
 }
 
@@ -122,6 +122,8 @@ class Game
 
     public void Run()
     {
+        Console.Clear();
+        Console.SetCursorPosition(0, 0);
         TrySetCursorVisible(false);
 
         try
@@ -186,7 +188,7 @@ class Game
         AddLessonScrolls(count: 3);
         AddEnemies(5 + _level);
 
-        var portals = RandomOpenPoint(minDistanceFromPlayer: 18);
+        var portals = RandomOpenPoint(minDistanceFromPlayer: 8);
         _map[portals.X, portals.Y] = Tile.Portal;
 
         _message = $"Depth {_level}: the air hums around the crystals.";
@@ -383,7 +385,7 @@ class Game
 
     private Point ChooseEnemyMove(Enemy enemy)
     {
-        var canSmellPlayer = enemy.Position.ManhattanDistanceTo(_player.Position) <= 8;
+        var canSmellPlayer = enemy.Position.ManhattanDistanceTo(_player.Position) <= (3 + _level / 2);
         if (!canSmellPlayer || _random.NextDouble() < 0.25)
         {
             return enemy.Position + ToDelta((Direction)_random.Next(0, 4));
@@ -433,7 +435,7 @@ class Game
         }
 
         Console.ResetColor();
-        Console.WriteLine(FitLine($"Depth {_level} Turn {_turn} HP {_player.Health}/{_player.MaxHealth} Crystals {_crystals} Lessons {_lessonsLearned.Count}"));
+        Console.WriteLine($"Depth {_level} Turn {_turn} HP {_player.Health}/{_player.MaxHealth} Crystals {_crystals} Lessons {_lessonsLearned.Count}");
         Console.WriteLine(FitLine(_message));
         Console.WriteLine(FitLine("Arrows/WASD move  Space wait  L lessons  Q quit"));
     }
