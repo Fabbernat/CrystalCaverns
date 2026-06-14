@@ -33,7 +33,7 @@ enum Tile
 enum ItemKind
 {
     Crystal,
-    Potion,
+    Apple,
     Scroll
 }
 
@@ -58,8 +58,8 @@ record Item(Point Position, ItemKind Kind, string? Lesson = null)
     public string Glyph => Kind switch
     {
         ItemKind.Crystal => "💎",
-        ItemKind.Potion => "🍎",
-        _ => "❓"
+        ItemKind.Apple => "🍎",
+        _ => "📜"
     };
 }
 
@@ -95,6 +95,7 @@ class Enemy : Actor
 class Game
 {
     private readonly int _width;
+    private const int HudWidth = 80;
     private readonly int _height;
     private readonly bool _demoMode;
     private readonly Random _random = new();
@@ -104,7 +105,7 @@ class Game
     private readonly Queue<Direction> _demoMoves = new();
     private readonly Queue<string> _lessonDeck = new();
     private Tile[,] _map = new Tile[1, 1];
-    private Actor _player = new("Explorer", new Point(1, 1), 30, 5, "🧙");
+    private Actor _player = new("Explorer", new Point(1, 1), 40, 5, "🧙");
     private int _level = 1;
     private int _turn = 1;
     private int _crystals;
@@ -184,7 +185,7 @@ class Game
         _player.Position = FirstOpenTile();
 
         AddRandomItems(ItemKind.Crystal, 7 + _level);
-        AddRandomItems(ItemKind.Potion, 2);
+        AddRandomItems(ItemKind.Apple, 2);
         AddLessonScrolls(count: 3);
         AddEnemies(5 + _level);
 
@@ -352,9 +353,9 @@ class Game
             return;
         }
 
-        var heal = _random.Next(6, 11);
+        var heal = _random.Next(10, 16);
         _player.Health = Math.Min(_player.MaxHealth, _player.Health + heal);
-        _message = $"The potion warms you for {heal} health.";
+        _message = $"The apple heals you for {heal} health.";
     }
 
     private void EnemyTurn()
@@ -435,9 +436,11 @@ class Game
         }
 
         Console.ResetColor();
-        Console.WriteLine($"Depth {_level} Turn {_turn} HP {_player.Health}/{_player.MaxHealth} Crystals {_crystals} Lessons {_lessonsLearned.Count}");
-        Console.WriteLine(FitLine(_message));
-        Console.WriteLine(FitLine("Arrows/WASD move  Space wait  L lessons  Q quit"));
+        Console.WriteLine(FitHud(
+            $"Depth {_level} Turn {_turn} HP {_player.Health}/{_player.MaxHealth} Crystals {_crystals} Lessons {_lessonsLearned.Count}"
+        ));
+        Console.WriteLine(FitHud(_message));
+        Console.WriteLine(FitHud("Arrows/WASD move  Space wait  L lessons  Q quit"));
     }
 
     private static bool CanUseCursorControl() => !Console.IsOutputRedirected;
@@ -459,11 +462,13 @@ class Game
         }
     }
 
-    private string FitLine(string text)
+
+
+    private string FitHud(string text)
     {
-        return text.Length <= _width
-            ? text.PadRight(_width)
-            : string.Concat(text.AsSpan(0, _width - 3), "...");
+        return text.Length <= HudWidth
+            ? text
+            : text[..(HudWidth - 3)] + "...";
     }
 
     private string GlyphFor(Point point)
@@ -511,7 +516,7 @@ class Game
             return ConsoleColor.Magenta;
         }
 
-        if (item?.Kind == ItemKind.Potion)
+        if (item?.Kind == ItemKind.Apple)
         {
             return ConsoleColor.Red;
         }
