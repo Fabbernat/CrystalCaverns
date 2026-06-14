@@ -104,9 +104,8 @@ class Game
     private readonly Queue<Direction> _demoMoves = new();
     private readonly Queue<string> _lessonDeck = new();
     private Tile[,] _map = new Tile[1, 1];
-private Actor _player =
-    new("Explorer", new Point(1, 1), 30, 5, "🧙");
-        private int _level = 1;
+    private Actor _player = new("Explorer", new Point(1, 1), 30, 5, "🧙");
+    private int _level = 1;
     private int _turn = 1;
     private int _crystals;
     private string _message = "Find the portals. Crystals make the expedition worthwhile.";
