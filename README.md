@@ -8,7 +8,7 @@ A small turn-based console roguelite written in C# and .NET.
 dotnet run
 ```
 
-Use the arrow keys or WASD to move. Moving into a slime attacks it. Find crystals, drink potions, collect lesson scrolls marked `?`, and step onto `>` to descend. Press `L` during the game to review the .NET lessons you have found.
+Use the arrow keys or WASD to move. Moving into a space alien attacks you. Find crystals, drink potions, collect lesson scrolls, and step onto the portal to descend. Press `L` during the game to review the .NET lessons you have found.
 
 For a quick automated smoke test:
 
