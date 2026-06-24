@@ -87,7 +87,7 @@ class Actor
 class Enemy : Actor
 {
     public Enemy(Point position, int level)
-        : base("Cave slime", position, maxHealth: 6 + level * 2, attack: 2 + level, glyph: "👾")
+        : base("Cave slime", position, maxHealth: 6 + level * 2, attack: 2 + level, glyph: "🤖")
     {
     }
 }
@@ -95,7 +95,7 @@ class Enemy : Actor
 class Game
 {
     private readonly int _width;
-    private const int HudWidth = 80;
+    private const int HudWidth = 200;
     private readonly int _height;
     private readonly bool _demoMode;
     private readonly Random _random = new();
@@ -594,17 +594,115 @@ class Game
     private void QueueLessons()
     {
         foreach (var lesson in new[]
-                 {
-                     "enum types give names to a fixed set of choices, like Wall, Floor, and Portals.",
-                     "record structs are great for tiny value types. Point compares by X and Y automatically.",
-                     "List<T> grows as you add enemies, items, and lessons. The type tells C# what it contains.",
-                     "LINQ methods such as FirstOrDefault and Any let you ask collections clear questions.",
-                     "switch expressions turn one value into another, which is perfect for glyphs and colors.",
-                     "properties such as IsAlive can compute useful facts without storing extra state.",
-                     "Console.ReadKey reads one key press, which keeps this game turn-based and responsive.",
-                     "Random creates variety, but your rules still shape what kind of cave appears.",
-                     "nullable references, like string?, remind you to handle missing data deliberately."
-                 })
+        {
+        // ===== C# BASICS (25) =====
+        "Variables store data so your program can remember values.",
+        "Choose meaningful variable names so code explains itself.",
+        "int stores whole numbers while double stores decimal numbers.",
+        "string stores text such as names and messages.",
+        "bool stores only true or false values.",
+        "if statements let your program make decisions.",
+        "else handles situations when a condition is false.",
+        "for loops repeat code a specific number of times.",
+        "foreach loops visit every item in a collection.",
+        "while loops continue until a condition becomes false.",
+        "Methods let you group reusable logic into one place.",
+        "Parameters send data into methods.",
+        "return sends a result back from a method.",
+        "Classes act like blueprints for creating objects.",
+        "Objects are instances created from classes.",
+        "Properties provide controlled access to data.",
+        "Constructors run when an object is created.",
+        "Lists store collections of items that can grow.",
+        "Arrays have a fixed size once created.",
+        "Enums give names to fixed choices.",
+        "Comments help explain why code exists.",
+        "Exceptions represent errors that happen while running.",
+        "Try-catch blocks let you handle errors safely.",
+        "Null means a variable points to nothing.",
+        "Practice reading code is just as important as writing code.",
+
+        // ===== VISUAL STUDIO (25) =====
+        "Solution Explorer shows your projects and files.",
+        "Press F5 to run and debug your application.",
+        "Press Ctrl+S often to save your work.",
+        "Breakpoints pause execution at specific lines.",
+        "The debugger helps you inspect variable values.",
+        "Hover over variables during debugging to see values.",
+        "Step Into enters method execution line by line.",
+        "Step Over runs a method without entering it.",
+        "Error List helps you find compilation problems.",
+        "Warnings do not always stop your program.",
+        "Red underlines usually indicate code problems.",
+        "IntelliSense suggests methods and properties automatically.",
+        "Press Ctrl+Space to trigger IntelliSense manually.",
+        "Rename symbols safely using Refactor Rename.",
+        "Use Ctrl+Dot to see quick code fixes.",
+        "Build compiles your project into executable code.",
+        "Clean removes generated build files.",
+        "Rebuild cleans and compiles everything again.",
+        "The Output window shows build messages.",
+        "NuGet installs useful libraries into projects.",
+        "Projects can belong to one solution.",
+        "Use folders to organize related files.",
+        "Git integration helps track code changes.",
+        "Watch windows let you monitor variables.",
+        "Debugging saves more time than guessing.",
+
+        // ===== .NET + WEB API (25) =====
+        "ASP.NET helps build web applications with C#.",
+        "A Web API lets applications communicate with each other.",
+        "Endpoints are URLs that perform actions.",
+        "GET requests usually retrieve data.",
+        "POST requests usually create new data.",
+        "PUT requests usually update data.",
+        "DELETE requests usually remove data.",
+        "JSON is commonly used to exchange data.",
+        "Controllers organize API endpoints.",
+        "Routes decide which URL calls which code.",
+        "Dependency Injection supplies objects automatically.",
+        "Services contain business logic.",
+        "Models describe application data.",
+        "DTOs transfer data between systems.",
+        "Middleware runs during every request.",
+        "Status code 200 means success.",
+        "Status code 404 means not found.",
+        "Status code 500 means server error.",
+        "Swagger helps test APIs visually.",
+        "Entity Framework simplifies database work.",
+        "DbContext manages database communication.",
+        "Async methods improve responsiveness.",
+        "await pauses without blocking execution.",
+        "APIs should return useful error messages.",
+        "Clean architecture keeps code easier to maintain.",
+
+        // ===== REACT + FULL STACK (25) =====
+        "React builds interfaces from reusable components.",
+        "Components help divide applications into small pieces.",
+        "Props send data from parent to child.",
+        "State stores changing information.",
+        "Changing state updates the user interface.",
+        "useState creates component state.",
+        "useEffect runs code after rendering.",
+        "JSX lets HTML-like syntax live inside JavaScript.",
+        "Events respond to user actions.",
+        "Forms collect user input.",
+        "Controlled inputs connect form values to state.",
+        "Keys help React track list items.",
+        "Conditional rendering shows content only when needed.",
+        "Fetch requests retrieve data from APIs.",
+        "Frontend runs in the browser.",
+        "Backend runs on the server.",
+        "Full-stack developers work with frontend and backend.",
+        "REST APIs connect applications together.",
+        "JSON often moves data between frontend and backend.",
+        "Browsers send HTTP requests to servers.",
+        "CSS controls application appearance.",
+        "Responsive design adapts layouts to screens.",
+        "Developer tools help inspect web pages.",
+        "Console logs help track application behavior.",
+        "Small reusable components simplify large projects."
+    })
         {
             _lessonDeck.Enqueue(lesson);
         }
