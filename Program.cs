@@ -105,7 +105,29 @@ class Game
     private readonly Queue<Direction> _demoMoves = new();
     private readonly Queue<string> _lessonDeck = new();
     private Tile[,] _map = new Tile[1, 1];
-    private Actor _player = new("Explorer", new Point(1, 1), 40, 5, "🧙");
+
+    // SHOCKBLAST
+    private const int ShockblastRadius = 4;
+    private const int ShockblastUsesPerLevel = 2;
+
+    private int _shockblastUsesRemaining = ShockblastUsesPerLevel;
+
+
+    // Magic number-ek:
+    private const int StartingHealth = 40;
+    private const int StartingAttack = 5;
+    private static readonly Point StartingPosition = new(10, 16); // A map közepén kezd
+
+    // És a felhasználásuk:
+    private Actor _player = new(
+        name: "Explorer",
+        position: default,
+        maxHealth: StartingHealth,
+        attack: StartingAttack,
+        glyph: "🧙"
+    );
+
+
     private int _level = 1;
     private int _turn = 1;
     private int _crystals;
@@ -173,6 +195,8 @@ class Game
         _enemies.Clear();
         _items.Clear();
 
+        _shockblastUsesRemaining = ShockblastUsesPerLevel;
+
         for (var y = 0; y < _height; y++)
         {
             for (var x = 0; x < _width; x++)
@@ -189,10 +213,44 @@ class Game
         AddLessonScrolls(count: 3);
         AddEnemies(5 + _level);
 
-        var portals = RandomOpenPoint(minDistanceFromPlayer: 8);
+        var portals = RandomOpenPoint(minDistanceFromPlayer: 6);
         _map[portals.X, portals.Y] = Tile.Portal;
 
         _message = $"Depth {_level}: the air hums around the crystals.";
+    }
+
+    // SHOCKBLAST METHOD
+    private void UseShockblast()
+    {
+        if (_shockblastUsesRemaining <= 0)
+        {
+            _message = "No shockblast charges left on this level.";
+            return;
+        }
+
+        var enemiesKilled = _enemies
+            .Where(enemy =>
+                enemy.IsAlive &&
+                enemy.Position.ManhattanDistanceTo(_player.Position) <= ShockblastRadius)
+            .ToList();
+
+        if (enemiesKilled.Count == 0)
+        {
+            _message = "Your shockblast pulses through the cave but hits nothing.";
+            return;
+        }
+
+        foreach (var enemy in enemiesKilled)
+        {
+            enemy.Health = 0;
+            _enemies.Remove(enemy);
+        }
+
+        _shockblastUsesRemaining--;
+
+        _message =
+            $"Arcane shockblast destroyed {enemiesKilled.Count} enemies! " +
+            $"Charges left: {_shockblastUsesRemaining}";
     }
 
     private Point FirstOpenTile()
@@ -208,7 +266,7 @@ class Game
             }
         }
 
-        return new Point(1, 1);
+        return new Point(10, 16);
     }
 
     private void AddRandomItems(ItemKind kind, int count)
@@ -274,17 +332,26 @@ class Game
         {
             var key = Console.ReadKey(intercept: true).Key;
             return key switch
-            {
-                ConsoleKey.UpArrow or ConsoleKey.W => Direction.Up,
-                ConsoleKey.DownArrow or ConsoleKey.S => Direction.Down,
-                ConsoleKey.LeftArrow or ConsoleKey.A => Direction.Left,
-                ConsoleKey.RightArrow or ConsoleKey.D => Direction.Right,
-                ConsoleKey.Spacebar or ConsoleKey.OemPeriod => Direction.None,
-                ConsoleKey.L => ReviewLessons(),
-                ConsoleKey.Q => null,
-                _ => Direction.None
-            };
+{
+    ConsoleKey.UpArrow or ConsoleKey.W => Direction.Up,
+    ConsoleKey.DownArrow or ConsoleKey.S => Direction.Down,
+    ConsoleKey.LeftArrow or ConsoleKey.A => Direction.Left,
+    ConsoleKey.RightArrow or ConsoleKey.D => Direction.Right,
+    ConsoleKey.Spacebar or ConsoleKey.OemPeriod => Direction.None,
+    ConsoleKey.L => ReviewLessons(),
+
+        ConsoleKey.E => HandleShockblast(),
+
+        ConsoleKey.Q => null,
+        _ => Direction.None
+    };
         }
+    }
+
+    private Direction HandleShockblast()
+    {
+        UseShockblast();
+        return Direction.None;
     }
 
     private void PlayerTurn(Direction direction)
@@ -437,10 +504,16 @@ class Game
 
         Console.ResetColor();
         Console.WriteLine(FitHud(
-            $"Depth {_level} Turn {_turn} HP {_player.Health}/{_player.MaxHealth} Crystals {_crystals} Lessons {_lessonsLearned.Count}"
+            $"Depth {_level} Turn {_turn} " +
+            $"HP {_player.Health}/{_player.MaxHealth} " +
+            $"Crystals {_crystals} " +
+            $"Lessons {_lessonsLearned.Count} " +
+            $"Shock {_shockblastUsesRemaining}/{ShockblastUsesPerLevel}"
         ));
         Console.WriteLine(FitHud(_message));
-        Console.WriteLine(FitHud("Arrows/WASD move  Space wait  L lessons  Q quit"));
+        Console.WriteLine(FitHud(
+            "Arrows/WASD move  Space wait  E shockblast(4 tiles)  L lessons  Q quit"
+        ));
     }
 
     private static bool CanUseCursorControl() => !Console.IsOutputRedirected;
