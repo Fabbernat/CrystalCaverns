@@ -334,19 +334,21 @@ class Game
         {
             var key = Console.ReadKey(intercept: true).Key;
             return key switch
-{
-    ConsoleKey.UpArrow or ConsoleKey.W => Direction.Up,
-    ConsoleKey.DownArrow or ConsoleKey.S => Direction.Down,
-    ConsoleKey.LeftArrow or ConsoleKey.A => Direction.Left,
-    ConsoleKey.RightArrow or ConsoleKey.D => Direction.Right,
-    ConsoleKey.Spacebar or ConsoleKey.OemPeriod => Direction.None,
-    ConsoleKey.L => ReviewLessons(),
+            {
+                ConsoleKey.UpArrow or ConsoleKey.W => Direction.Up,
+                ConsoleKey.DownArrow or ConsoleKey.S => Direction.Down,
+                ConsoleKey.LeftArrow or ConsoleKey.A => Direction.Left,
+                ConsoleKey.RightArrow or ConsoleKey.D => Direction.Right,
+                ConsoleKey.Spacebar or ConsoleKey.OemPeriod => Direction.None,
 
-        ConsoleKey.E => HandleShockblast(),
+                ConsoleKey.L => ReviewLessons(),
+                ConsoleKey.E => HandleShockblast(),
+                ConsoleKey.R => HandleMazeRegeneration(),
 
-        ConsoleKey.Q => null,
-        _ => Direction.None
-    };
+
+                ConsoleKey.Q => null,
+                _ => Direction.None
+            };
         }
     }
 
@@ -354,6 +356,46 @@ class Game
     {
         UseShockblast();
         return Direction.None;
+    }
+
+    private Direction HandleMazeRegeneration()
+    {
+        RegenerateMaze();
+        return Direction.None;
+    }
+
+    private void RegenerateMaze()
+    {
+        // Generate a fresh map
+        _map = new Tile[_width, _height];
+
+        _enemies.Clear();
+        _items.Clear();
+
+        for (var y = 0; y < _height; y++)
+        {
+            for (var x = 0; x < _width; x++)
+            {
+                var isBorder = x == 0 || y == 0 || x == _width - 1 || y == _height - 1;
+                _map[x, y] = isBorder || _random.NextDouble() < 0.14
+                    ? Tile.Wall
+                    : Tile.Floor;
+            }
+        }
+
+        // Put the player somewhere valid
+        _player.Position = FirstOpenTile();
+
+        // Recreate current level contents
+        AddRandomItems(ItemKind.Crystal, 7 + _level);
+        AddRandomItems(ItemKind.Apple, 2);
+        AddLessonScrolls(3);
+        AddEnemies(5 + _level);
+
+        var portal = RandomOpenPoint(minDistanceFromPlayer: 6);
+        _map[portal.X, portal.Y] = Tile.Portal;
+
+        _message = "The cave shifts around you, revealing a new path!";
     }
 
     private void PlayerTurn(Direction direction)
@@ -514,7 +556,7 @@ class Game
         ));
         Console.WriteLine(FitHud(_message));
         Console.WriteLine(FitHud(
-            "Arrows/WASD move  Space wait  E shockblast(4 tiles)  L lessons  Q quit"
+            "Arrows/WASD move  Space wait  E shockblast(4 tiles)  R regenerate maze  L lessons  Q quit"
         ));
     }
 
