@@ -45,7 +45,10 @@ enum Direction
     Down,
     Left,
     Right,
-    None
+    Wait,
+    Shockblast,
+    Regenerate,
+    Lessons
 }
 
 readonly record struct Point(int X, int Y)
@@ -251,6 +254,7 @@ class Game
         _shockblastUsesRemaining--;
 
         _message =
+            $"You used your shockblast to clear the area of enemies! " +
             $"Arcane shockblast destroyed {enemiesKilled.Count} enemies! " +
             $"Charges left: {_shockblastUsesRemaining}";
     }
@@ -339,29 +343,15 @@ class Game
                 ConsoleKey.DownArrow or ConsoleKey.S => Direction.Down,
                 ConsoleKey.LeftArrow or ConsoleKey.A => Direction.Left,
                 ConsoleKey.RightArrow or ConsoleKey.D => Direction.Right,
-                ConsoleKey.Spacebar or ConsoleKey.OemPeriod => Direction.None,
-
-                ConsoleKey.L => ReviewLessons(),
-                ConsoleKey.E => HandleShockblast(),
-                ConsoleKey.R => HandleMazeRegeneration(),
-
+                ConsoleKey.Spacebar or ConsoleKey.OemPeriod => Direction.Wait,
+                ConsoleKey.E => Direction.Shockblast,
+                ConsoleKey.R => Direction.Regenerate,
+                ConsoleKey.L => Direction.Lessons,
 
                 ConsoleKey.Q => null,
-                _ => Direction.None
+                _ => Direction.Wait
             };
         }
-    }
-
-    private Direction HandleShockblast()
-    {
-        UseShockblast();
-        return Direction.None;
-    }
-
-    private Direction HandleMazeRegeneration()
-    {
-        RegenerateMaze();
-        return Direction.None;
     }
 
     private void RegenerateMaze()
@@ -395,11 +385,29 @@ class Game
         var portal = RandomOpenPoint(minDistanceFromPlayer: 6);
         _map[portal.X, portal.Y] = Tile.Portal;
 
-        _message = "The cave shifts around you, revealing a new path!";
+        _message = "You used your magical ability. With a handflip, the cave shifts around you, revealing a new path!";
     }
 
     private void PlayerTurn(Direction direction)
     {
+        switch (direction)
+        {
+            case Direction.Wait:
+                _message = "You listen to the cave drip around you.";
+                return;
+
+            case Direction.Shockblast:
+                UseShockblast();
+                return;
+
+            case Direction.Regenerate:
+                RegenerateMaze();
+                return;
+
+            case Direction.Lessons:
+                ReviewLessons();
+                return;
+        }
         var destination = _player.Position + ToDelta(direction);
         var enemy = _enemies.FirstOrDefault(enemy => enemy.Position == destination && enemy.IsAlive);
 
@@ -415,11 +423,7 @@ class Game
             return;
         }
 
-        if (direction == Direction.None)
-        {
-            _message = "You listen to the cave drip around you.";
-            return;
-        }
+    
 
         if (!IsWalkable(destination))
         {
@@ -669,7 +673,7 @@ class Game
                  {
                      Direction.Right, Direction.Right, Direction.Down, Direction.Down,
                      Direction.Left, Direction.Up, Direction.Right, Direction.Down,
-                     Direction.Right, Direction.Right, Direction.None
+                     Direction.Right, Direction.Right, Direction.Wait
                  })
         {
             _demoMoves.Enqueue(direction);
@@ -680,7 +684,7 @@ class Game
     {
         if (_demoMode)
         {
-            return Direction.None;
+            return Direction.Wait;
         }
 
         Console.Clear();
@@ -705,7 +709,7 @@ class Game
         Console.WriteLine("Press any key to return to the cave.");
         Console.ReadKey(intercept: true);
         _message = "You tuck the lesson scrolls safely away.";
-        return Direction.None;
+        return Direction.Wait;
     }
 
     private void QueueLessons()
