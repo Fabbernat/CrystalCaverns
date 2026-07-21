@@ -10,10 +10,12 @@ if (args.Contains("--help"))
         Explore the caves, collect crystals, fight slimes, and find portals.
 
         Controls:
-          Arrow keys / WASD  Move or attack
-          Space / .          Wait
-          L                  Review lesson scrolls
-          Q                  Quit
+        Arrow keys / WASD  Move or attack
+        Space / .          Wait
+        E                  Shockblast
+        R                  Regenerate maze
+        L                  Review lesson scrolls
+        Q                  Quit
 
         Run with --demo to simulate a few turns without keyboard input.
         """);
