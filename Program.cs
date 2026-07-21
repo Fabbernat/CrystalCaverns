@@ -168,10 +168,16 @@ class Game
                     continue;
                 }
 
-                PlayerTurn(direction.Value);
-                if (_player.IsAlive)
+                var turnConsumed = PlayerTurn(direction.Value);
+
+                if (turnConsumed)
                 {
-                    EnemyTurn();
+                    if (_player.IsAlive)
+                    {
+                        EnemyTurn();
+                    }
+
+                    _turn++;
                 }
 
                 _turn++;
@@ -388,25 +394,25 @@ class Game
         _message = "You used your magical ability. With a handflip, the cave shifts around you, revealing a new path!";
     }
 
-    private void PlayerTurn(Direction direction)
+    private bool PlayerTurn(Direction direction)
     {
         switch (direction)
         {
             case Direction.Wait:
                 _message = "You listen to the cave drip around you.";
-                return;
+                return true;
 
             case Direction.Shockblast:
                 UseShockblast();
-                return;
+                return true;
 
             case Direction.Regenerate:
                 RegenerateMaze();
-                return;
+                return true ;
 
             case Direction.Lessons:
                 ReviewLessons();
-                return;
+                return false;
         }
         var destination = _player.Position + ToDelta(direction);
         var enemy = _enemies.FirstOrDefault(enemy => enemy.Position == destination && enemy.IsAlive);
@@ -420,7 +426,7 @@ class Game
                 _enemies.Remove(enemy);
             }
 
-            return;
+            return true;
         }
 
     
@@ -428,7 +434,7 @@ class Game
         if (!IsWalkable(destination))
         {
             _message = "Stone blocks the way.";
-            return;
+            return true;
         }
 
         _player.Position = destination;
@@ -440,6 +446,7 @@ class Game
             _player.Health = Math.Min(_player.MaxHealth, _player.Health + 8);
             GenerateLevel();
         }
+        return true;
     }
 
     private void PickUpItemAt(Point point)
