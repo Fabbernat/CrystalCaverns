@@ -5,17 +5,18 @@ Console.OutputEncoding = Encoding.UTF8;
 if (args.Contains("--help"))
 {
     Console.WriteLine("""
-        Crystal Caverns
-
-        Explore the caves, collect crystals, fight slimes, and find portals.
-
+        **Crystal Caverns**
+        \n
+        Explore the caves, collect crystals, fight monsters, and find portals.
+        \n
         Controls:
-        Arrow keys / WASD  Move or attack
-        Space / .          Wait
-        E                  Shockblast
-        R                  Regenerate maze
-        L                  Review lesson scrolls
-        Q                  Quit
+        \n
+        Move or attack: Arrow keys / WASD ( Up: W    Down: S    Left: A    Right: D ) 
+        Wait: Space
+        Shockblast: E
+        Regenerate maze: R
+        Review lesson scrolls: L
+        Quit: Q
 
         Run with --demo to simulate a few turns without keyboard input.
         """);
