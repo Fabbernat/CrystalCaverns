@@ -122,7 +122,6 @@ class Game
     // Magic number-ek:
     private const int StartingHealth = 40;
     private const int StartingAttack = 5;
-    private static readonly Point StartingPosition = new(10, 16); // A map közepén kezd
 
     // És a felhasználásuk:
     private Actor _player = new(
@@ -155,8 +154,13 @@ class Game
         _height = height;
         _demoMode = demoMode;
         QueueLessons();
-        QueueDemoMoves();
-        GenerateLevel();
+
+if (_demoMode)
+{
+    QueueDemoMoves();
+}
+
+GenerateLevel();
         AddMessage("Find the portals. Crystals make the expedition worthwhile.");
     }
 
@@ -218,15 +222,7 @@ class Game
 
         _shockblastUsesRemaining = ShockblastUsesPerLevel;
 
-        for (var y = 0; y < _height; y++)
-        {
-            for (var x = 0; x < _width; x++)
-            {
-                var isBorder = x == 0 || y == 0 || x == _width - 1 || y == _height - 1;
-                _map[x, y] = isBorder || _random.NextDouble() < 0.14 ? Tile.Wall : Tile.Floor;
-            }
-        }
-
+        GenerateMap();
         _player.Position = FirstOpenTile();
 
         AddRandomItems(ItemKind.Crystal, 7 + _level);
@@ -240,6 +236,25 @@ class Game
         AddMessage($"Depth {_level}: the air hums around the crystals.");
     }
 
+private void GenerateMap()
+{
+    _map = new Tile[_width, _height];
+
+    for (var y = 0; y < _height; y++)
+    {
+        for (var x = 0; x < _width; x++)
+        {
+            var isBorder = x == 0
+                || y == 0
+                || x == _width - 1
+                || y == _height - 1;
+
+            _map[x, y] = isBorder || _random.NextDouble() < 0.14
+                ? Tile.Wall
+                : Tile.Floor;
+        }
+    }
+}
     // SHOCKBLAST METHOD
     private void UseShockblast()
     {
@@ -288,7 +303,7 @@ class Game
             }
         }
 
-        return new Point(10, 16);
+    throw new InvalidOperationException("Could not find an open starting tile.");
     }
 
     private void AddRandomItems(ItemKind kind, int count)
@@ -334,7 +349,7 @@ class Game
             }
         }
 
-        return FirstOpenTile();
+    throw new InvalidOperationException("Could not find a free open tile.");
     }
 
     private Direction? ReadDirection()
@@ -371,40 +386,12 @@ class Game
     }
 
     private void RegenerateMaze()
-    {
-        // Generate a fresh map
-        _map = new Tile[_width, _height];
-
-        _enemies.Clear();
-        _items.Clear();
-
-        for (var y = 0; y < _height; y++)
-        {
-            for (var x = 0; x < _width; x++)
-            {
-                var isBorder = x == 0 || y == 0 || x == _width - 1 || y == _height - 1;
-                _map[x, y] = isBorder || _random.NextDouble() < 0.14
-                    ? Tile.Wall
-                    : Tile.Floor;
-            }
-        }
-
-        // Put the player somewhere valid
-        _player.Position = FirstOpenTile();
-
-        // Recreate current level contents
-        AddRandomItems(ItemKind.Crystal, 7 + _level);
-        AddRandomItems(ItemKind.Apple, 2);
-        AddLessonScrolls(3);
-        AddEnemies(5 + _level);
-
-        var portal = RandomOpenPoint(minDistanceFromPlayer: 6);
-        _map[portal.X, portal.Y] = Tile.Portal;
-
-        AddMessage(
-    "You used your magical ability. With a handflip, the cave shifts around you, revealing a new path!"
-);
-    }
+{
+    GenerateLevel();
+    AddMessage(
+        "You used your magical ability. With a handflip, the cave shifts around you, revealing a new path!"
+    );
+}
 
     private bool PlayerTurn(Direction direction)
     {
