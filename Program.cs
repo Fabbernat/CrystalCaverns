@@ -101,7 +101,7 @@ class Enemy : Actor
 class Game
 {
     private readonly int _width;
-    private const int HudWidth = 200;
+    private const int HudWidth = 128;
     private readonly int _height;
     private readonly bool _demoMode;
     private readonly Random _random = new();
@@ -137,7 +137,17 @@ class Game
     private int _level = 1;
     private int _turn = 1;
     private int _crystals;
-    private string _message = "Find the portals. Crystals make the expedition worthwhile.";
+    private readonly Queue<string> _messages = new();
+
+    private void AddMessage(string message)
+{
+    _messages.Enqueue(message);
+
+    while (_messages.Count > 4)
+    {
+        _messages.Dequeue();
+    }
+}
 
     public Game(int width, int height, bool demoMode)
     {
@@ -147,6 +157,7 @@ class Game
         QueueLessons();
         QueueDemoMoves();
         GenerateLevel();
+        AddMessage("Find the portals. Crystals make the expedition worthwhile.");
     }
 
     public void Run()
@@ -180,8 +191,6 @@ class Game
 
                     _turn++;
                 }
-
-                _turn++;
 
                 if (_demoMode && _turn > 80)
                 {
@@ -228,7 +237,7 @@ class Game
         var portals = RandomOpenPoint(minDistanceFromPlayer: 6);
         _map[portals.X, portals.Y] = Tile.Portal;
 
-        _message = $"Depth {_level}: the air hums around the crystals.";
+        AddMessage($"Depth {_level}: the air hums around the crystals.");
     }
 
     // SHOCKBLAST METHOD
@@ -236,7 +245,7 @@ class Game
     {
         if (_shockblastUsesRemaining <= 0)
         {
-            _message = "No shockblast charges left on this level.";
+            AddMessage("No shockblast charges left on this level.");
             return;
         }
 
@@ -248,7 +257,7 @@ class Game
 
         if (enemiesKilled.Count == 0)
         {
-            _message = "Your shockblast pulses through the cave but hits nothing.";
+            AddMessage("Your shockblast pulses through the cave but hits nothing.");
             return;
         }
 
@@ -260,10 +269,10 @@ class Game
 
         _shockblastUsesRemaining--;
 
-        _message =
+        AddMessage(
             $"You used your shockblast to clear the area of enemies! " +
             $"Arcane shockblast destroyed {enemiesKilled.Count} enemies! " +
-            $"Charges left: {_shockblastUsesRemaining}";
+            $"Charges left: {_shockblastUsesRemaining}");
     }
 
     private Point FirstOpenTile()
@@ -392,7 +401,9 @@ class Game
         var portal = RandomOpenPoint(minDistanceFromPlayer: 6);
         _map[portal.X, portal.Y] = Tile.Portal;
 
-        _message = "You used your magical ability. With a handflip, the cave shifts around you, revealing a new path!";
+        AddMessage(
+    "You used your magical ability. With a handflip, the cave shifts around you, revealing a new path!"
+);
     }
 
     private bool PlayerTurn(Direction direction)
@@ -400,7 +411,7 @@ class Game
         switch (direction)
         {
             case Direction.Wait:
-                _message = "You listen to the cave drip around you.";
+                AddMessage("You listen to the cave drip around you.");
                 return true;
 
             case Direction.Shockblast:
@@ -409,7 +420,7 @@ class Game
 
             case Direction.Regenerate:
                 RegenerateMaze();
-                return true ;
+                return true;
 
             case Direction.Lessons:
                 ReviewLessons();
@@ -423,18 +434,18 @@ class Game
             Attack(_player, enemy);
             if (!enemy.IsAlive)
             {
-                _message = $"You shatter the {enemy.Name.ToLowerInvariant()}.";
+                AddMessage($"You shatter the {enemy.Name.ToLowerInvariant()}.");
                 _enemies.Remove(enemy);
             }
 
             return true;
         }
 
-    
+
 
         if (!IsWalkable(destination))
         {
-            _message = "Stone blocks the way.";
+            AddMessage("Stone blocks the way.");
             return true;
         }
 
@@ -455,7 +466,7 @@ class Game
         var item = _items.FirstOrDefault(item => item.Position == point);
         if (item is null)
         {
-            _message = "You step carefully through the cave.";
+            AddMessage("You step carefully through the cave.");
             return;
         }
 
@@ -464,7 +475,7 @@ class Game
         if (item.Kind == ItemKind.Crystal)
         {
             _crystals++;
-            _message = "A crystal rings like glass in your pack.";
+            AddMessage("A crystal rings like glass in your pack.");
             return;
         }
 
@@ -472,13 +483,13 @@ class Game
         {
             var lesson = item.Lesson ?? "C# lets you model ideas with types, then let the compiler help you.";
             _lessonsLearned.Add(lesson);
-            _message = $"Lesson scroll: {lesson}";
+            AddMessage($"Lesson scroll: {lesson}");
             return;
         }
 
         var heal = _random.Next(10, 16);
         _player.Health = Math.Min(_player.MaxHealth, _player.Health + heal);
-        _message = $"The apple heals you for {heal} health.";
+        AddMessage($"The apple heals you for {heal} health.");
     }
 
     private void EnemyTurn()
@@ -527,7 +538,7 @@ class Game
     {
         var damage = Math.Max(1, attacker.Attack + _random.Next(-1, 3));
         defender.Health -= damage;
-        _message = $"{attacker.Name} hits {defender.Name.ToLowerInvariant()} for {damage}.";
+        AddMessage($"{attacker.Name} hits {defender.Name.ToLowerInvariant()} for {damage}.");
     }
 
     private bool IsWalkable(Point point)
@@ -539,38 +550,76 @@ class Game
             && _map[point.X, point.Y] != Tile.Wall;
     }
 
-    private void Render()
+  private void Render()
+{
+    if (CanUseCursorControl())
     {
-        if (CanUseCursorControl())
-        {
-            Console.SetCursorPosition(0, 0);
-        }
-
-        for (var y = 0; y < _height; y++)
-        {
-            for (var x = 0; x < _width; x++)
-            {
-                var point = new Point(x, y);
-                Console.ForegroundColor = ColorFor(point);
-                Console.Write(GlyphFor(point));
-            }
-
-            Console.WriteLine();
-        }
-
-        Console.ResetColor();
-        Console.WriteLine(FitHud(
-            $"Depth {_level} Turn {_turn} " +
-            $"HP {_player.Health}/{_player.MaxHealth} " +
-            $"Crystals {_crystals} " +
-            $"Lessons {_lessonsLearned.Count} " +
-            $"Shock {_shockblastUsesRemaining}/{ShockblastUsesPerLevel}"
-        ));
-        Console.WriteLine(FitHud(_message));
-        Console.WriteLine(FitHud(
-            "Arrows/WASD move  Space wait  E shockblast(4 tiles)  R regenerate maze  L lessons  Q quit"
-        ));
+        Console.SetCursorPosition(0, 0);
     }
+
+    Console.Clear();
+
+    RenderMaze();
+
+    Console.WriteLine(new string('─', HudWidth));
+
+    RenderStats();
+
+    Console.WriteLine(new string('─', HudWidth));
+
+    Console.WriteLine(FitHud("MESSAGE"));
+
+    foreach (var message in _messages)
+    {
+        Console.WriteLine(FitHud("> " + message));
+    }
+
+    Console.WriteLine(new string('─', HudWidth));
+
+    Console.WriteLine(FitHud(
+        "WASD/Arrows Move | Space Wait | E Shockblast | R Regenerate"
+    ));
+
+    Console.WriteLine(FitHud(
+        "L Lessons | Q Quit"
+    ));
+}
+
+    private void RenderMaze()
+{
+    for (var y = 0; y < _height; y++)
+    {
+        for (var x = 0; x < _width; x++)
+        {
+            var point = new Point(x, y);
+
+            Console.ForegroundColor = ColorFor(point);
+            Console.Write(GlyphFor(point));
+        }
+
+        Console.WriteLine();
+    }
+
+    Console.ResetColor();
+}
+
+private void RenderStats()
+{
+    Console.ForegroundColor = ConsoleColor.White;
+
+    Console.WriteLine(FitHud(
+        $"Depth: {_level}    Turn: {_turn}    " +
+        $"HP: {_player.Health}/{_player.MaxHealth}"
+    ));
+
+    Console.WriteLine(FitHud(
+        $"Crystals: {_crystals}    " +
+        $"Lessons: {_lessonsLearned.Count}    " +
+        $"Shockblast: {_shockblastUsesRemaining}/{ShockblastUsesPerLevel}"
+    ));
+
+    Console.ResetColor();
+}
 
     private static bool CanUseCursorControl() => !Console.IsOutputRedirected;
 
@@ -595,9 +644,12 @@ class Game
 
     private string FitHud(string text)
     {
-        return text.Length <= HudWidth
-            ? text
-            : text[..(HudWidth - 3)] + "...";
+        if (text.Length > HudWidth)
+        {
+            text = text[..(HudWidth - 3)] + "...";
+        }
+
+        return text.PadRight(HudWidth);
     }
 
     private string GlyphFor(Point point)
@@ -688,37 +740,21 @@ class Game
         }
     }
 
-    private Direction ReviewLessons()
+  private void ReviewLessons()
+{
+    if (_demoMode)
     {
-        if (_demoMode)
-        {
-            return Direction.Wait;
-        }
-
-        Console.Clear();
-        Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine("Lesson Scrolls");
-        Console.WriteLine("--------------");
-        Console.ResetColor();
-
-        if (_lessonsLearned.Count == 0)
-        {
-            Console.WriteLine("You have not found a lesson scroll yet. Look for ? in the caverns.");
-        }
-        else
-        {
-            for (var i = 0; i < _lessonsLearned.Count; i++)
-            {
-                Console.WriteLine($"{i + 1}. {_lessonsLearned[i]}");
-            }
-        }
-
-        Console.WriteLine();
-        Console.WriteLine("Press any key to return to the cave.");
-        Console.ReadKey(intercept: true);
-        _message = "You tuck the lesson scrolls safely away.";
-        return Direction.Wait;
+        return;
     }
+
+    Console.Clear();
+
+    // ...
+    
+    Console.ReadKey(intercept: true);
+
+    AddMessage("You tuck the lesson scrolls safely away.");
+}
 
     private void QueueLessons()
     {
